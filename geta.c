@@ -17,12 +17,12 @@ enum { GVAL_NUM, GVAL_ERR };
 
 typedef struct {
     int type;
-    long num;
+    double num;
     int err;
 } gval;
 
 /* new number type gval */
-gval gval_num(long x) {
+gval gval_num(double x) {
     gval v;
     v.type = GVAL_NUM;
     v.num = x;
@@ -40,7 +40,7 @@ gval gval_err(int x) {
 void gval_print(gval v) {
     switch (v.type) {
         case GVAL_NUM:
-            printf("%li", v.num);
+            printf("%f", v.num);
             break;
         case GVAL_ERR:
             if (v.err == GERR_DIV_ZERO) {
@@ -92,7 +92,7 @@ gval eval(mpc_ast_t* t) {
     if (strstr(t->tag, "number")) {
         /* Check if there is some error in conversion */
         errno = 0;
-        long x = strtol(t->contents, NULL, 10);
+        double x = strtof(t->contents, NULL);
         return errno != ERANGE ? gval_num(x) : gval_err(GERR_BAD_NUM);
     }
 
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
     /* Define them with the following Language */
     mpca_lang(MPCA_LANG_DEFAULT,
             "                                                   \
-            number   : /-?[0-9]+/ ;                             \
+            number   :/-?[0-9]+(\\.[0-9]+)?/;                   \
             operator : '+' | '-' | '*' | '/' | '^'              \
                      | \"min\" | \"max\" ;                      \
             expr     : <number> | '(' <operator> <expr>+ ')' ;  \
